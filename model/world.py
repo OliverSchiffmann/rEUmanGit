@@ -23,6 +23,6 @@ class World:
         self._agents[agent.id()] = agent
         self._agents_by_type[agent.type()].append(agent.id())
 
-    def call_next(self):
+    def call_next(self, rng):
         for _, agent in self._agents.items():
-            agent.next()
+            agent.next(rng)

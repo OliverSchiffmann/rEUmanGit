@@ -28,5 +28,5 @@ class BaseAgent:
     def type(self) -> AgentEnum:
         return self._type
 
-    def next(self):
+    def next(self, rng):
         return

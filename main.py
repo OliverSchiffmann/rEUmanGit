@@ -7,13 +7,14 @@ if __name__ == "__main__":
     rng = random.default_rng(seed=1)
     world = World()
 
-    customer_population = 1000
+    customer_population: int = 1000
+    simulation_length: int = 365
 
     for i in range(0, customer_population):
         customer = Customer(id=i, world=world)
         world.add_agent(customer)
 
-    for i in range(0, 365):  # model time unit is days bc i said it is
+    for i in range(0, simulation_length):  # model time unit is days bc i said it is
         world.tick()
         print(f"Day {world.now()}")
         print(

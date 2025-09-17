@@ -16,6 +16,7 @@ class BaseAgent:
     _world: World
     _id: int
     _type: AgentEnum
+    _state: Enum  # type of state will depend on the agent type
 
     def __init__(self, world: World, id: int, type: AgentEnum):
         self._world = world
@@ -25,8 +26,11 @@ class BaseAgent:
     def id(self) -> int:
         return self._id
 
+    def state(self) -> Enum:
+        return self._state
+
     def type(self) -> AgentEnum:
         return self._type
 
-    def next(self, rng):
+    def next(self, rng, day: int):
         return

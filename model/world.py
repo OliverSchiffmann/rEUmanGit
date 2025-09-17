@@ -25,4 +25,4 @@ class World:
 
     def call_next(self, rng):
         for _, agent in self._agents.items():
-            agent.next(rng)
+            agent.next(rng, self._now)

@@ -1,8 +1,7 @@
 from __future__ import annotations
-
 from enum import Enum
-
 from typing import TYPE_CHECKING
+from .message import Message
 
 if TYPE_CHECKING:  # IDK what this does
     from .world import World
@@ -32,5 +31,8 @@ class BaseAgent:
     def type(self) -> AgentEnum:
         return self._type
 
-    def next(self, rng, day: int, retailer_stock: float):
+    def next(self, rng):
         return
+
+    def handle_message(self, message: Message):
+        pass  # specific functionality overridden by specific agent type

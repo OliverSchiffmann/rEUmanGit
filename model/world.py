@@ -2,6 +2,8 @@ from __future__ import annotations
 from collections import Counter
 from typing import TYPE_CHECKING
 from model._agent import AgentEnum, BaseAgent
+import random
+from .message import Message
 from . import customer
 
 
@@ -25,6 +27,7 @@ class World:
     _num_potential_users: int
     _num_wants_A: int
     _num_uses_A: int
+    _message_queue: list[Message]
 
     def __init__(self) -> None:
         self._now = 0
@@ -36,6 +39,7 @@ class World:
         self._num_potential_users = 0
         self._num_wants_A = 0
         self._num_uses_A = 0
+        self._message_queue = []
 
     def tick(self) -> None:
         self._now += 1
@@ -54,7 +58,8 @@ class World:
         self.update_production_A()
         self.deliver_to_retailer_A()
         for _, agent in self._agents.items():
-            agent.next(rng, self._now, self._retailer_stock_A)
+            agent.next(rng)
+        self.process_messages()
 
     def update_customer_state_counts(self):
         customer_states = [
@@ -84,3 +89,19 @@ class World:
 
     def confirm_order(self):
         self._retailer_stock_A = self._retailer_stock_A - 1
+
+    def recieve_message(self, message: Message):
+        self._message_queue.append(message)
+
+    def get_random_agent_id(self, exclude_id: int) -> int:
+        agent_ids = [id for id in self._agents.keys() if id != exclude_id]
+        if not agent_ids:
+            return -1  # No other agents to send to
+        return random.choice(agent_ids)
+
+    def process_messages(self):
+        for message in self._message_queue:
+            recipient = self._agents.get(message.recipient_id)
+            if recipient:
+                recipient.handle_message(message)
+        self._message_queue.clear()

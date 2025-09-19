@@ -2,13 +2,20 @@ from model.world import World
 from model._agent import AgentEnum
 from model.customer import Customer, CustomerStatesEnum
 from numpy import random
+import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     rng = random.default_rng(seed=1)
     world = World()
 
     customer_population: int = 1000
-    simulation_length: int = 365
+    simulation_length: int = 80
+
+    results = {
+        "day": [],
+        "wants_A": [],
+        "uses_A": [],
+    }
 
     for i in range(0, customer_population):
         customer = Customer(id=i, world=world)
@@ -21,20 +28,27 @@ if __name__ == "__main__":
             f"Customers: {world._agents_by_type[AgentEnum.CUSTOMER][:5]}...{world._agents_by_type[AgentEnum.CUSTOMER][-5:]}"
         )
 
-        potential_user_count = 0
-        wants_A_count = 0
-        uses_A_count = 0
-        for agent in world._agents.values():
-            if (
-                agent._state == CustomerStatesEnum.POTENTIAL_USER
-            ):  # confused about issues accessig _state
-                potential_user_count += 1
-            elif agent._state == CustomerStatesEnum.WANTS_A:
-                wants_A_count += 1
-            elif agent._state == CustomerStatesEnum.USES_A:
-                uses_A_count += 1
         print(
-            f"Potential users: {potential_user_count}, Wanting A: {wants_A_count}, Using A: {uses_A_count}"
+            f"Potential users: {world._num_potential_users}, Wanting A: {world._num_wants_A}, Using A: {world._num_uses_A}"
         )
 
+        results["day"].append(world.now())
+        results["wants_A"].append(world._num_wants_A)
+        results["uses_A"].append(world._num_uses_A)
+
         world.call_next(rng)
+
+    plt.stackplot(
+        results["day"],
+        results["wants_A"],
+        results["uses_A"],
+        labels=["Wants A", "Uses A"],
+    )
+
+    # Add labels and a title for clarity
+    plt.title("Customer States Over Time")
+    plt.xlabel("Day")
+    plt.ylabel("Number of Customers")
+    plt.legend(loc="upper left")
+    plt.grid(True)
+    plt.show()

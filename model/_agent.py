@@ -32,5 +32,5 @@ class BaseAgent:
     def type(self) -> AgentEnum:
         return self._type
 
-    def next(self, rng, day: int, retailer_stock: int):
+    def next(self, rng, day: int, retailer_stock: float):
         return

@@ -40,9 +40,9 @@ if __name__ == "__main__":
 
     plt.stackplot(
         results["day"],
-        results["wants_A"],
         results["uses_A"],
-        labels=["Wants A", "Uses A"],
+        results["wants_A"],
+        labels=["Uses A", "Wants A"],
     )
 
     # Add labels and a title for clarity
@@ -51,4 +51,5 @@ if __name__ == "__main__":
     plt.ylabel("Number of Customers")
     plt.legend(loc="upper left")
     plt.grid(True)
+    plt.subplots_adjust(left=0.136, right=0.9, top=0.9, bottom=0.57)
     plt.show()

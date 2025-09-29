@@ -59,7 +59,7 @@ class World:
         self.deliver_to_retailer_A()
         for _, agent in self._agents.items():
             agent.next(rng)
-        self.process_messages()
+        self.process_messages(rng)
 
     def update_customer_state_counts(self):
         customer_states = [
@@ -99,9 +99,9 @@ class World:
             return -1  # No other agents to send to
         return random.choice(agent_ids)
 
-    def process_messages(self):
+    def process_messages(self, rng):
         for message in self._message_queue:
             recipient = self._agents.get(message.recipient_id)
             if recipient:
-                recipient.handle_message(message)
+                recipient.handle_message(message, rng)
         self._message_queue.clear()

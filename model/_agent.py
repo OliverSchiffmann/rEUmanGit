@@ -34,5 +34,5 @@ class BaseAgent:
     def next(self, rng):
         return
 
-    def handle_message(self, message: Message):
+    def handle_message(self, message: Message, rng):
         pass  # specific functionality overridden by specific agent type

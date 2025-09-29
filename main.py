@@ -9,7 +9,7 @@ if __name__ == "__main__":
     world = World()
 
     customer_population: int = 1000
-    simulation_length: int = 80
+    simulation_length: int = 150
 
     results = {
         "day": [],

@@ -1,6 +1,7 @@
 from model.world import World
 from model._agent import AgentEnum
 from model.customer import Customer, CustomerStatesEnum
+from model.product import ProductEnum
 from numpy import random
 import matplotlib.pyplot as plt
 
@@ -15,6 +16,8 @@ if __name__ == "__main__":
         "day": [],
         "wants_A": [],
         "uses_A": [],
+        "wants_B": [],
+        "uses_B": [],
     }
 
     for i in range(0, customer_population):
@@ -29,12 +32,14 @@ if __name__ == "__main__":
         )
 
         print(
-            f"Potential users: {world._num_potential_users}, Wanting A: {world._num_wants_A}, Using A: {world._num_uses_A}"
+            f"Potential users: {world._num_potential_users},\n Wanting A: {world._num_wants[ProductEnum.A]}, Using A: {world._num_uses[ProductEnum.A]},\n Wanting B: {world._num_wants[ProductEnum.B]}, Using B: {world._num_uses[ProductEnum.B]}"
         )
 
         results["day"].append(world.now())
-        results["wants_A"].append(world._num_wants_A)
-        results["uses_A"].append(world._num_uses_A)
+        results["wants_A"].append(world._num_wants[ProductEnum.A])
+        results["uses_A"].append(world._num_uses[ProductEnum.A])
+        results["wants_B"].append(world._num_wants[ProductEnum.B])
+        results["uses_B"].append(world._num_uses[ProductEnum.B])
 
         world.call_next(rng)
 
@@ -42,7 +47,9 @@ if __name__ == "__main__":
         results["day"],
         results["uses_A"],
         results["wants_A"],
-        labels=["Uses A", "Wants A"],
+        results["uses_B"],
+        results["wants_B"],
+        labels=["Uses B", "Wants B", "Uses A", "Wants A"],
     )
 
     # Add labels and a title for clarity

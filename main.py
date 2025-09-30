@@ -10,7 +10,7 @@ if __name__ == "__main__":
     world = World()
 
     customer_population: int = 1000
-    simulation_length: int = 150
+    simulation_length: int = 180
 
     results = {
         "day": [],
@@ -18,6 +18,7 @@ if __name__ == "__main__":
         "uses_A": [],
         "wants_B": [],
         "uses_B": [],
+        "wants_any": [],
     }
 
     for i in range(0, customer_population):
@@ -32,7 +33,7 @@ if __name__ == "__main__":
         )
 
         print(
-            f"Potential users: {world._num_potential_users},\n Wanting A: {world._num_wants[ProductEnum.A]}, Using A: {world._num_uses[ProductEnum.A]},\n Wanting B: {world._num_wants[ProductEnum.B]}, Using B: {world._num_uses[ProductEnum.B]}"
+            f"Potential users: {world._num_potential_users},\n Wanting A: {world._num_wants[ProductEnum.A]}, Using A: {world._num_uses[ProductEnum.A]},\n Wanting B: {world._num_wants[ProductEnum.B]}, Using B: {world._num_uses[ProductEnum.B], }\n Wanting Any: {world._num_wants_any}"
         )
 
         results["day"].append(world.now())
@@ -40,6 +41,7 @@ if __name__ == "__main__":
         results["uses_A"].append(world._num_uses[ProductEnum.A])
         results["wants_B"].append(world._num_wants[ProductEnum.B])
         results["uses_B"].append(world._num_uses[ProductEnum.B])
+        results["wants_any"].append(world._num_wants_any)
 
         world.call_next(rng)
 
@@ -49,14 +51,15 @@ if __name__ == "__main__":
         results["wants_A"],
         results["uses_B"],
         results["wants_B"],
-        labels=["Uses B", "Wants B", "Uses A", "Wants A"],
+        results["wants_any"],
+        labels=["Uses A", "Wants A", "Uses B", "Wants B", "Wants Any"],
     )
 
     # Add labels and a title for clarity
     plt.title("Customer States Over Time")
     plt.xlabel("Day")
     plt.ylabel("Number of Customers")
-    plt.legend(loc="upper left")
+    plt.legend(loc="lower right")
     plt.grid(True)
     plt.subplots_adjust(left=0.136, right=0.9, top=0.9, bottom=0.57)
     plt.show()

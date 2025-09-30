@@ -29,6 +29,7 @@ class World:
     _factory_stock: dict[ProductEnum, float]
     _production_rate: dict[ProductEnum, float]
     _num_potential_users: int
+    _num_wants_any: int
     _num_wants: dict[ProductEnum, int]
     _num_uses: dict[ProductEnum, int]
     _message_queue: list[Message]
@@ -47,6 +48,7 @@ class World:
         }
         self._production_rate = {ProductEnum.A: 0, ProductEnum.B: 0}
         self._num_potential_users = 0
+        self._num_wants_any = 0
         self._num_wants = {ProductEnum.A: 0, ProductEnum.B: 0}
         self._num_uses = {ProductEnum.A: 0, ProductEnum.B: 0}
         self._message_queue = []
@@ -77,6 +79,7 @@ class World:
         self._num_wants = {product: 0 for product in ProductEnum}
         self._num_uses = {product: 0 for product in ProductEnum}
         potential_users = 0
+        users_wanting_any = 0
 
         for agent in self._agents.values():
             if isinstance(agent, customer.Customer):
@@ -90,11 +93,16 @@ class World:
                     self._num_uses[ProductEnum.A] += 1
                 elif agent.state() == CustomerStatesEnum.USES_B:
                     self._num_uses[ProductEnum.B] += 1
+                elif agent.state() == CustomerStatesEnum.WANTS_ANY:
+                    users_wanting_any += 1
         self._num_potential_users = potential_users
+        self._num_wants_any = users_wanting_any
 
     def update_production(self):
         for product in ProductEnum:
-            self._production_rate[product] = self._num_wants[product]
+            self._production_rate[product] = (
+                self._num_wants[product] + self._num_wants_any
+            )
             self._factory_stock[product] += self._production_rate[product]
             print(
                 f"Production Rate for {product.name}: {self._production_rate[product]}"

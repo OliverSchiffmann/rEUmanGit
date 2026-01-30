@@ -3,13 +3,9 @@ from typing import TYPE_CHECKING
 from model._agent import AgentEnum, BaseAgent
 import random
 from .message import Message
+from . import customer
 from .product import ProductEnum
 
-
-virgin_stock: int = 100
-reman_stock: int = 0
-
-delivery_delay: int = 2  # number of days for delivery (must be >=1)
 
 if TYPE_CHECKING:
     from .customer import Customer, CustomerStatesEnum
@@ -19,19 +15,23 @@ class World:
     _now: int
     _agents: dict[int, BaseAgent]
     _agents_by_type: dict[AgentEnum, list[int]]
-    _retailer_stock: dict[ProductEnum, float]
+    _num_potential_users: int
+    _num_wants: dict[ProductEnum, int]
+    _num_uses: dict[ProductEnum, int]
+    _message_queue: list[Message]
 
     def __init__(self) -> None:
         self._now = 0
         self._agents = {}
         self._agents_by_type = {AgentEnum.CUSTOMER: []}
-        self._retailer_stock = {
-            ProductEnum.V: virgin_stock,
-            ProductEnum.R: reman_stock,
-        }
+        self._num_potential_users = 0
+        self._num_wants = {ProductEnum.V: 0, ProductEnum.R: 0}
+        self._num_uses = {ProductEnum.V: 0, ProductEnum.R: 0}
+        self._message_queue = []
 
     def tick(self) -> None:
         self._now += 1
+        self.update_customer_state_counts()
 
     def now(self) -> int:
         return self._now
@@ -41,3 +41,34 @@ class World:
             exit(f"Agent with id already exists. Received: {agent.id}")
         self._agents[agent.id()] = agent
         self._agents_by_type[agent.type()].append(agent.id())
+
+    def call_next(self, rng):
+        for _, agent in self._agents.items():
+            agent.next(rng)
+
+    def update_customer_state_counts(self):
+        from .customer import CustomerStatesEnum
+
+        self._num_wants = {product: 0 for product in ProductEnum}
+        self._num_uses = {product: 0 for product in ProductEnum}
+        potential_users = 0
+
+        for agent in self._agents.values():
+            if isinstance(agent, customer.Customer):
+                if agent.state() == CustomerStatesEnum.POTENTIAL_USER:
+                    potential_users += 1
+                elif agent.state() == CustomerStatesEnum.WANTS_VIRGIN:
+                    self._num_wants[ProductEnum.V] += 1
+                elif agent.state() == CustomerStatesEnum.USES_VIRGIN:
+                    self._num_uses[ProductEnum.V] += 1
+        self._num_potential_users = potential_users
+
+    def recieve_message(self, message: Message):
+        self._message_queue.append(message)
+
+    def process_messages(self, rng):
+        for message in self._message_queue:
+            recipient = self._agents.get(message.recipient_id)
+            if recipient:
+                recipient.handle_message(message, rng)
+        self._message_queue.clear()

@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
 class CustomerStatesEnum(str, Enum):
     POTENTIAL_USER = "potential_user"
+    WANTS_VIRGIN = "wants_virgin"
+    USES_VIRGIN = "uses_virgin"
 
 
 product_params = {
@@ -24,6 +26,9 @@ product_params = {
         "lifespan": (17, 24),
         "advertising_effectiveness": 0.011,
         "wom_threshold": 0.015,
+        "wants_state": CustomerStatesEnum.WANTS_VIRGIN,
+        "uses_state": CustomerStatesEnum.USES_VIRGIN,
+        "buy_message": MessageType.BUY_V,
     },
     ProductEnum.R: {
         "lifespan": (17, 24),
@@ -47,3 +52,20 @@ class Customer(BaseAgent):
         self._end_of_patience_day = -1
         self._active_product = None
         super().__init__(id=id, type=AgentEnum.CUSTOMER, world=world)
+
+    def next(self, rng):
+        match self._state:
+            case CustomerStatesEnum.POTENTIAL_USER:
+                # this section is needed to avoid bias towards one product by always checking that first
+                productsToConsider = [ProductEnum.V, ProductEnum.R]
+                rng.shuffle(productsToConsider)
+                for product in productsToConsider:
+                    if (
+                        rng.random()
+                        < product_params[product]["advertising_effectiveness"]
+                    ):  # if a potential user is successfully influenced by ads
+                        self.try_and_buy(rng, product)
+                        break
+
+
+# need to implement the next fucntion for customer to get V0.1 working, this will also need stock logic added to OEM

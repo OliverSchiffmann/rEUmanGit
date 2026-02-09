@@ -2,6 +2,7 @@ from model.world import World
 from model._agent import AgentEnum
 from model.customer import Customer, CustomerStatesEnum
 from model.product import ProductEnum
+from model.OEM import OEM
 from numpy import random
 import matplotlib.pyplot as plt
 
@@ -18,8 +19,11 @@ if __name__ == "__main__":
         "uses_virgin": [],
     }
 
+    oemAgent = OEM(id=-1, world=world)
+    world.add_agent(oemAgent)
+
     for i in range(0, BtoB_population):
-        customer = Customer(id=i, world=world)
+        customer = Customer(id=i, world=world, oem=oemAgent)
         world.add_agent(customer)
 
     for i in range(0, simulation_length):  # model time unit is days bc i said it is

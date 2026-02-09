@@ -23,7 +23,7 @@ class World:
     def __init__(self) -> None:
         self._now = 0
         self._agents = {}
-        self._agents_by_type = {AgentEnum.CUSTOMER: []}
+        self._agents_by_type = {AgentEnum.CUSTOMER: [], AgentEnum.OEM: []}
         self._num_potential_users = 0
         self._num_wants = {ProductEnum.V: 0, ProductEnum.R: 0}
         self._num_uses = {ProductEnum.V: 0, ProductEnum.R: 0}

@@ -19,11 +19,23 @@ class OEMStatesEnum(str, Enum):
     OPERATIONAL = "Operational"
 
 
-class OEM:
+class OEM(BaseAgent):
+    _state: OEMStatesEnum
     _retailer_stock: dict[ProductEnum, float]
 
-    def __init__(self) -> None:
+    def __init__(self, id: int, world: World) -> None:
+        super().__init__(id=id, type=AgentEnum.OEM, world=world)
+        self._state = OEMStatesEnum.OPERATIONAL
         self._retailer_stock = {
             ProductEnum.V: virgin_stock,
             ProductEnum.R: reman_stock,
         }
+
+    def requestProduct(self, product: ProductEnum) -> bool:
+        currentStock = self._retailer_stock[product]
+
+        if currentStock >= 1:
+            self._retailer_stock[product] -= 1
+            return True
+
+        return False

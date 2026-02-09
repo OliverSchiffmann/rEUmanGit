@@ -9,7 +9,7 @@ if TYPE_CHECKING:  # IDK what this does
 
 class AgentEnum(str, Enum):  # what does that mean 'enumeration'?
     CUSTOMER = "customer"
-    OEM = "OEM"
+    OEM = "oem"
 
 
 class BaseAgent:

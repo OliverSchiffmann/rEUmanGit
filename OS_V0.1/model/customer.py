@@ -13,6 +13,7 @@ patience: int = 2  # number of days a customer will wait for delivery before giv
 
 if TYPE_CHECKING:
     from .world import World
+    from .OEM import OEM
 
 
 class CustomerStatesEnum(str, Enum):
@@ -45,13 +46,14 @@ class Customer(BaseAgent):
     _end_of_patience_day: int
     _active_product: ProductEnum | None
 
-    def __init__(self, id: int, world: World):
+    def __init__(self, id: int, world: World, oem: OEM):
         self._state = CustomerStatesEnum.POTENTIAL_USER
         self._delivery_day = -1
         self._end_of_life_day = -1
         self._end_of_patience_day = -1
         self._active_product = None
         super().__init__(id=id, type=AgentEnum.CUSTOMER, world=world)
+        self._oem = oem
 
     def next(self, rng):
         match self._state:
@@ -66,6 +68,30 @@ class Customer(BaseAgent):
                     ):  # if a potential user is successfully influenced by ads
                         self.try_and_buy(rng, product)
                         break
+            case CustomerStatesEnum.WANTS_A: #carry on adding logic here
 
+    # need to implement the next fucntion for customer to get V0.1 working, this will also need stock logic added to OEM
+    def try_and_buy(self, rng, product: ProductEnum):
+        purchaseSuccessful = self._oem.requestProduct(product)
 
-# need to implement the next fucntion for customer to get V0.1 working, this will also need stock logic added to OEM
+        if purchaseSuccessful:
+            if delivery_time == 0:  # checking if delivery is instant
+                self.become_user(rng, product)
+            else:
+                self._state = product_params[product]["wants_state"]
+                self._active_product = product
+                self._delivery_day = self._world.now() + delivery_time
+        else:
+            self._state = product_params[product]["wants_state"]
+            self._active_product = product
+            self._end_of_patience_day = self._world.now() + patience
+
+    def become_user(self, rng, product: ProductEnum):
+        self._state = product_params[product]["uses_state"]
+        self._active_product = product
+        self._delivery_day = -1
+        self._end_of_patience_day = -1
+
+        lifespan_range = product_params[product]["lifespan"]
+        lifespan = rng.integers(*lifespan_range)
+        self._end_of_life_day = self._world.now() + lifespan

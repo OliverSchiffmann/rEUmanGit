@@ -9,6 +9,7 @@ from .product import ProductEnum
 
 if TYPE_CHECKING:
     from .customer import Customer, CustomerStatesEnum
+    from .OEM import OEM, OEMStatesEnum
 
 
 class World:
@@ -19,8 +20,9 @@ class World:
     _num_wants: dict[ProductEnum, int]
     _num_uses: dict[ProductEnum, int]
     _message_queue: list[Message]
+    _active_products: list[ProductEnum]
 
-    def __init__(self) -> None:
+    def __init__(self, enable_reman: bool = True) -> None:
         self._now = 0
         self._agents = {}
         self._agents_by_type = {AgentEnum.CUSTOMER: [], AgentEnum.OEM: []}
@@ -28,6 +30,9 @@ class World:
         self._num_wants = {ProductEnum.V: 0, ProductEnum.R: 0}
         self._num_uses = {ProductEnum.V: 0, ProductEnum.R: 0}
         self._message_queue = []
+        self._active_products = [ProductEnum.V]
+        if enable_reman:
+            self._active_products.append(ProductEnum.R)
 
     def tick(self) -> None:
         self._now += 1
@@ -35,6 +40,9 @@ class World:
 
     def now(self) -> int:
         return self._now
+
+    def get_active_products(self) -> list[ProductEnum]:
+        return self._active_products[:]  # returns a copy to avoid editing
 
     def add_agent(self, agent: BaseAgent):
         if agent.id() in self._agents:

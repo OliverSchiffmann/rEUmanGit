@@ -8,10 +8,10 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     rng = random.default_rng(seed=1)
-    world = World()
+    world = World(enable_reman=False)  # Toggle reman on/off with True/False
 
     BtoB_population: int = 100
-    simulation_length: int = 365
+    simulation_length: int = 100  # number of DAYS the simulation runs for
 
     results = {
         "day": [],

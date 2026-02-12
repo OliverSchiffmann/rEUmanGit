@@ -24,6 +24,10 @@ if __name__ == "__main__":
         "core_stock": [],
         "virgin_stock": [],
         "reman_stock": [],
+        "virgin_sold": [],
+        "reman_sold": [],
+        "cores_collected": [],
+        "cores_rejected": [],
     }
 
     oemAgent = OEM(id=-1, world=world)
@@ -33,7 +37,7 @@ if __name__ == "__main__":
         customer = Customer(id=i, world=world, oem=oemAgent)
         world.add_agent(customer)
 
-    for i in range(0, simulation_length):  # model time unit is days bc i said it is
+    for i in range(0, simulation_length):  # model time unit is days
         world.tick()
         print(f"---------")
         print(f"Day {world.now()}:\n")
@@ -52,10 +56,37 @@ if __name__ == "__main__":
         results["core_stock"].append(oemAgent._core_stock)
         results["virgin_stock"].append(oemAgent._factory_stock[ProductEnum.V])
         results["reman_stock"].append(oemAgent._factory_stock[ProductEnum.R])
+        results["virgin_sold"].append(oemAgent._products_sold[ProductEnum.V])
+        results["reman_sold"].append(oemAgent._products_sold[ProductEnum.R])
+        results["cores_collected"].append(oemAgent._total_cores_collected)
+        results["cores_rejected"].append(oemAgent._total_cores_rejected)
 
         world.call_next(rng)
 
-    fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(10, 8))
+    report = oemAgent.generate_financial_report()
+    cost = report["Total Cost"]
+    revenue = report["Total Revenue"]
+    profit = revenue - cost
+
+    print("\nCost Breakdown:")
+    for key, value in report["Breakdown"].items():
+        print(f"  {key}: €{value:,.2f}")
+
+    print("\nOperational Stats:")
+    for key, value in report["Statistics"].items():
+        print(f"  {key}: {value:,.0f}")
+    print("\n")
+    print("-" * 40)
+    print(f"{'FINANCIAL SUMMARY':^40}")
+    print("-" * 40)
+
+    print(f"Total Cost (€):      -{cost:,.2f}")
+    print(f"Total Revenue (€):   +{revenue:,.2f}")
+    print("-" * 40)
+    print(f"NET PROFIT (€):      {profit:+,.2f}")
+    print("-" * 40)
+
+    fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1, sharex=True, figsize=(10, 8))
 
     colours = [
         "#2fa8e9",  # Potential Users (Light Blue)
@@ -76,11 +107,11 @@ if __name__ == "__main__":
         results["wants_any"],
         labels=[
             "Potential Users",
-            "Wants virgin",
-            "Uses virgin",
-            "Wants reman",
-            "Uses reman",
-            "Wants any",
+            "Wants Virgin",
+            "Uses Virgin",
+            "Wants Reman",
+            "Uses Reman",
+            "Wants Any",
         ],
         colors=colours,
     )
@@ -100,23 +131,60 @@ if __name__ == "__main__":
     ax2.plot(
         results["day"],
         results["virgin_stock"],
-        color="#d91c1f",
+        color=colours[2],
         linewidth=2,
         label="Virgin Stock",
     )
     ax2.plot(
         results["day"],
         results["reman_stock"],
-        color="#33a02c",
+        color=colours[4],
         linewidth=2,
         label="Reman Stock",
     )
 
     ax2.set_title("OEM Inventory Level")
-    ax2.set_xlabel("Day")
     ax2.set_ylabel("Units")
-    ax2.legend(loc="upper left")
+    ax2.legend(loc="upper right")
     ax2.grid(True, alpha=0.3)
+
+    ax3.plot(
+        results["day"],
+        results["virgin_sold"],
+        color=colours[2],
+        linewidth=2,
+        label="Virgin Sold",
+    )
+
+    ax3.plot(
+        results["day"],
+        results["reman_sold"],
+        color=colours[4],
+        linewidth=2,
+        label="Reman Sold",
+    )
+
+    ax3.plot(
+        results["day"],
+        results["cores_collected"],
+        color=colours[3],
+        linewidth=2,
+        label="Cores Collected",
+    )
+
+    ax3.plot(
+        results["day"],
+        results["cores_rejected"],
+        color=colours[1],
+        linewidth=2,
+        label="Cores Rejected",
+    )
+
+    ax3.set_xlabel("Day")
+    ax3.set_title("Sales and Reverse Logistics")
+    ax3.set_ylabel("Units")
+    ax3.legend(loc="upper left")
+    ax3.grid(True, alpha=0.3)
 
     plt.tight_layout()
     plt.show()

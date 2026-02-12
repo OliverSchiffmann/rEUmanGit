@@ -19,6 +19,7 @@ class World:
     _num_potential_users: int
     _num_wants: dict[ProductEnum, int]
     _num_uses: dict[ProductEnum, int]
+    _num_wants_any: int
     _message_queue: list[Message]
     _active_products: list[ProductEnum]
 
@@ -29,6 +30,7 @@ class World:
         self._num_potential_users = 0
         self._num_wants = {ProductEnum.V: 0, ProductEnum.R: 0}
         self._num_uses = {ProductEnum.V: 0, ProductEnum.R: 0}
+        self._num_wants_any = 0
         self._message_queue = []
         self._active_products = [ProductEnum.V]
         if enable_reman:
@@ -59,6 +61,7 @@ class World:
 
         self._num_wants = {product: 0 for product in ProductEnum}
         self._num_uses = {product: 0 for product in ProductEnum}
+        self._num_wants_any = 0
         potential_users = 0
 
         for agent in self._agents.values():
@@ -69,6 +72,12 @@ class World:
                     self._num_wants[ProductEnum.V] += 1
                 elif agent.state() == CustomerStatesEnum.USES_VIRGIN:
                     self._num_uses[ProductEnum.V] += 1
+                elif agent.state() == CustomerStatesEnum.WANTS_REMAN:
+                    self._num_wants[ProductEnum.R] += 1
+                elif agent.state() == CustomerStatesEnum.USES_REMAN:
+                    self._num_uses[ProductEnum.R] += 1
+                elif agent.state() == CustomerStatesEnum.WANTS_ANY:
+                    self._num_wants_any += 1
         self._num_potential_users = potential_users
 
     def recieve_message(self, message: Message):

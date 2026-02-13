@@ -54,7 +54,7 @@ class Customer(BaseAgent):
     _patience: int
     _end_of_patience_day: int
 
-    def __init__(self, id: int, world: World, oem: OEM):
+    def __init__(self, id: int, world: World, oem: OEM, config: dict):
         self._state = CustomerStatesEnum.POTENTIAL_USER
         self._delivery_day = -1
         self._end_of_life_day = -1

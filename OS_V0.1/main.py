@@ -1,3 +1,5 @@
+import argparse
+from scenarios import SCENARIOS
 from model.world import World
 from model._agent import AgentEnum
 from model.customer import Customer, CustomerStatesEnum
@@ -7,11 +9,32 @@ from numpy import random
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
-    rng = random.default_rng(seed=1)
-    world = World(enable_reman=True)  # Toggle reman on/off with True/False
+    parser = argparse.ArgumentParser(description="Run Economic Feasibility Model")
+    parser.add_argument(
+        "--scenario", type=str, default="Default", help="Name of the scenario to run"
+    )
+    args = parser.parse_args()
 
-    BtoB_population: int = 100
-    simulation_length: int = 1200  # number of DAYS the simulation runs for
+    if args.scenario not in SCENARIOS:
+        raise ValueError(
+            f"Scenario '{args.scenario}' not found. Options are: {list(SCENARIOS.keys())}"
+        )
+
+    config = SCENARIOS[args.scenario]
+    print("-" * 40)
+    print(f"Running Scenario: {args.scenario}")
+    print(f"Description: {config['description']}")
+    print("-" * 40)
+
+    rng = random.default_rng(seed=config["main"]["seed"])
+    world = World(
+        enable_reman=config["main"]["enable_reman"]
+    )  # Toggle reman on/off with True/False
+
+    BtoB_population: int = config["main"]["BtoB_population"]
+    simulation_length: int = config["main"][
+        "simulation_length"
+    ]  # number of DAYS the simulation runs for
 
     results = {
         "day": [],
@@ -30,21 +53,21 @@ if __name__ == "__main__":
         "cores_rejected": [],
     }
 
-    oemAgent = OEM(id=-1, world=world)
+    oemAgent = OEM(id=-1, world=world, config=config["oem"])
     world.add_agent(oemAgent)
 
     for i in range(0, BtoB_population):
-        customer = Customer(id=i, world=world, oem=oemAgent)
+        customer = Customer(id=i, world=world, oem=oemAgent, config=config["customer"])
         world.add_agent(customer)
 
     for i in range(0, simulation_length):  # model time unit is days
         world.tick()
-        print(f"---------")
-        print(f"Day {world.now()}:\n")
+        # print(f"---------")
+        # print(f"Day {world.now()}:\n")
 
-        print(
-            f"Potential users: {world._num_potential_users},\n Wanting Virgin: {world._num_wants[ProductEnum.V]}, Using Virgin: {world._num_uses[ProductEnum.V]}\n Wanting Reman: {world._num_wants[ProductEnum.R]}, Using Reman: {world._num_uses[ProductEnum.R]}\n"
-        )
+        # print(
+        #     f"Potential users: {world._num_potential_users},\n Wanting Virgin: {world._num_wants[ProductEnum.V]}, Using Virgin: {world._num_uses[ProductEnum.V]}\n Wanting Reman: {world._num_wants[ProductEnum.R]}, Using Reman: {world._num_uses[ProductEnum.R]}\n"
+        # )
 
         results["day"].append(world.now())
         results["potential_users"].append(world._num_potential_users)

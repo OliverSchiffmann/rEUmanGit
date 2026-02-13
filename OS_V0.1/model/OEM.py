@@ -7,11 +7,10 @@ from .product import ProductEnum
 
 
 # Setup Parameters
-virgin_stock: int = 10  # inital stock of virgin products
-core_stock: int = 0  # inital stock of cores for remanufacturing
+virgin_stock: int = 10
+core_stock: int = 0
 reman_stock: int = 0  # inital stock of remanufactured units
 delivery_delay: int = 1  # number of days for delivery between OEM and customer
-manufacture_delay = 5  # Sort of the time it takes to meet the demand (must be >=1 as you cant divide by 0)
 remanufacture_delay = 3  # Sort of the time it takes for a core to be collected and turned into a reman product available to buy (must be >=1)
 core_acceptance_rate: float = (
     0.7  # Captures the fact that not all cores are usable (cores from reman goods, different amounts of wear on product, etc)
@@ -36,13 +35,13 @@ class OEMStatesEnum(str, Enum):
 class OEM(BaseAgent):
     _state: OEMStatesEnum
     _delivery_delay: int
-    _manufacture_delay: int
+    _manufacture_delay: int  # Sort of the time it takes to meet the demand (must be >=1 as you cant divide by 0)
     _remanufacture_delay: int
-    _factory_stock: dict[ProductEnum, float]
+    _factory_stock: dict[ProductEnum, float]  # stock of products
     _production_rate: dict[ProductEnum, float]
     _products_sold: dict[ProductEnum, int]
     _total_products_produced: dict[ProductEnum, float]
-    _core_stock: float
+    _core_stock: float  # inital stock of cores for remanufacturing
     _core_acceptance_rate: float
     _total_cores_collected: int
     _total_cores_rejected: int
@@ -53,15 +52,15 @@ class OEM(BaseAgent):
     _retail_price_V: float
     _retail_price_R: float
 
-    def __init__(self, id: int, world: World) -> None:
-        if manufacture_delay < 1:
+    def __init__(self, id: int, world: World, config: dict) -> None:
+        if config["manufacture_delay"] < 1:
             raise ValueError(
-                f"manufacture_delay must be >=1. Received: {manufacture_delay}"
+                f"manufacture_delay must be >=1. Received: {config['manufacture_delay']}"
             )
         super().__init__(id=id, type=AgentEnum.OEM, world=world)
         self._state = OEMStatesEnum.OPERATIONAL
         self._delivery_delay = delivery_delay
-        self._manufacture_delay = manufacture_delay
+        self._manufacture_delay = config["manufacture_delay"]
         self._remanufacture_delay = remanufacture_delay
         self._factory_stock = {
             ProductEnum.V: virgin_stock,
@@ -113,12 +112,12 @@ class OEM(BaseAgent):
                     self._total_products_produced[product] += self._production_rate[
                         product
                     ]
-                    print(
-                        f"Production Rate for {product.name}: {self._production_rate[product]:.4f}"
-                    )
-                    print(
-                        f"Factory Stock of {product.name}: {self._factory_stock[product]:.4f}"
-                    )
+                    # print(
+                    #     f"Production Rate for {product.name}: {self._production_rate[product]:.4f}"
+                    # )
+                    # print(
+                    #     f"Factory Stock of {product.name}: {self._factory_stock[product]:.4f}"
+                    # )
                 case ProductEnum.R:
                     desired_production = (
                         self._world._num_wants[product] + self._world._num_wants_any
@@ -134,13 +133,13 @@ class OEM(BaseAgent):
                         product
                     ]
                     self._core_stock -= self._production_rate[product]
-                    print(f"Core stock: {self._core_stock:.4f}")
-                    print(
-                        f"Production Rate for {product.name}: {self._production_rate[product]:.4f}"
-                    )
-                    print(
-                        f"Factory Stock of {product.name}: {self._factory_stock[product]:.4f}"
-                    )
+                    # print(f"Core stock: {self._core_stock:.4f}")
+                    # print(
+                    #     f"Production Rate for {product.name}: {self._production_rate[product]:.4f}"
+                    # )
+                    # print(
+                    #     f"Factory Stock of {product.name}: {self._factory_stock[product]:.4f}"
+                    # )
 
     def generate_financial_report(self) -> dict:
         """Returns a dictionary containing cost breakdown and total."""
